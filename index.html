@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>สำรวจปัญหาและความต้องการ ระบบ Centrix</title>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   :root{
     --bg:#f3f5f9; --card:#fff; --text:#1f2937; --muted:#6b7280; --line:#e5e7eb;
@@ -329,30 +328,7 @@ async function submit(){
     // 1) บันทึกลง Google Sheet (และให้ Apps Script push เข้าไลน์ถ้าตั้ง token ไว้)
     const saved = await saveToSheet(payload);   // saved.urls = [[url,...], ...] ต่อรายการ
 
-    // 2) ส่ง Flex เข้าแชท/กลุ่ม ผ่าน LIFF (ใช้ได้เมื่อเปิดฟอร์มจากในไลน์)
-    let sentToLine = false, lineErr = "";
-    if(!inLiff) lineErr = "LIFF ไม่ทำงาน (" + (window.__liffErr || "init ไม่สำเร็จ") + ")";
-    else if(!liff.isInClient()) lineErr = "ไม่ได้เปิดจากในแอปไลน์ — เปิดผ่านลิงก์ liff.line.me ในแชท/กลุ่ม";
-    else{
-      const flexPayload = { ...payload, items: payload.items.map((it, i) => ({ ...it, photos: undefined, urls: (saved.urls && saved.urls[i]) || [] })) };
-      try{
-        await liff.sendMessages([ buildFlex(flexPayload) ]);
-        sentToLine = true;
-      }catch(e){
-        console.warn("sendMessages failed", e);
-        lineErr = "ส่งการ์ดไม่สำเร็จ: " + (e && (e.message || e.code) || e);
-        // สำรอง: ส่งเป็นข้อความธรรมดา
-        try{
-          const txt = `📋 สำรวจปัญหา/ความต้องการ Centrix\n🏥 ${payload.dept}\n` +
-            payload.items.map((it, i) => `${i+1}. [${it.catName}] ${it.detail}`).join("\n");
-          await liff.sendMessages([{ type: "text", text: txt.slice(0, 4900) }]);
-          sentToLine = true; lineErr = "";
-        }catch(e2){ lineErr += " / ข้อความธรรมดาก็ไม่สำเร็จ: " + (e2 && (e2.message || e2.code) || e2); }
-      }
-    }
-
-    $("#doneMsg").textContent = `บันทึก ${payload.items.length} รายการลง Google Sheet แล้ว` +
-      (sentToLine ? " และส่งแจ้งเตือนเข้าไลน์แล้ว" : ` แต่ยังไม่ได้ส่งเข้าไลน์ — ${lineErr}`);
+    $("#doneMsg").textContent = `บันทึก ${payload.items.length} รายการลง Google Sheet แล้ว`;
     $("#formView").classList.add("hidden");
     $("#bar").classList.add("hidden");
     $("#doneView").classList.remove("hidden");
@@ -441,15 +417,6 @@ $("#againBtn").addEventListener("click", reset);
 
 addItem(false);
 
-(async () => {
-  if(!window.liff) window.__liffErr = "โหลด LIFF SDK ไม่ได้";
-  if(CONFIG.LIFF_ID && window.liff){
-    try{
-      await liff.init({ liffId: CONFIG.LIFF_ID });
-      inLiff = true;
-    }catch(e){ window.__liffErr = (e && (e.message || e.code)) || String(e); console.warn("LIFF init failed", e); }
-  }
-})();
 </script>
 </body>
 </html>
