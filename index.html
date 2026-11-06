@@ -22,8 +22,8 @@
   label.f{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
   input[type=text],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
   input[type=text]:focus,textarea:focus{outline:2px solid #93c5fd;border-color:#93c5fd}
-  select.dept{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
-  select.dept.invalid{border-color:#dc2626;background:#fef2f2}
+  .dept{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+  .dept.invalid{border-color:#dc2626;background:#fef2f2}
   textarea{min-height:96px;resize:vertical}
   .item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
   .item-no{font-weight:700}
@@ -100,7 +100,7 @@
 
 <main id="formView">
   <div class="card"><label style="font-weight:600;font-size:14px;display:block;margin-bottom:6px">🏥 แผนก / หน่วยงาน</label>
-    <select id="dept" class="dept"><option value="">— เลือกแผนก/หน่วยงาน —</option></select></div>
+    <input id="dept" class="dept" type="text" list="deptList" placeholder="พิมพ์ค้นหา หรือเลือกแผนก/หน่วยงาน" autocomplete="off"><datalist id="deptList"></datalist></div>
   <div id="items"></div>
 
   <button class="add" id="addBtn" type="button">＋ เพิ่มรายการ</button>
@@ -241,7 +241,7 @@ function shrink(file, max=1280, q=0.75){
 function validate(){
   let ok = true, firstBad = null;
   $("#dept").classList.remove("invalid");
-  if(!$("#dept").value){ $("#dept").classList.add("invalid"); ok = false; firstBad = $("#dept"); }
+  if(!DEPTS.includes($("#dept").value.trim())){ $("#dept").classList.add("invalid"); ok = false; firstBad = $("#dept"); }
   items.forEach(it => {
     const el = document.querySelector(`[data-id="${it.id}"]`);
     if(!it.cat){ el.querySelector(".chips").classList.add("invalid"); ok = false; firstBad = firstBad || el; }
@@ -319,7 +319,7 @@ async function submit(){
   btn.disabled = true; btn.textContent = "กำลังส่ง...";
 
   const payload = {
-    dept: $("#dept").value,
+    dept: $("#dept").value.trim(),
     items: items.map(i => ({ cat: i.cat, catName: CATS[i.cat].name, detail: i.detail.trim(), photos: i.photos })),
     timeText: thaiNow(),
   };
@@ -352,7 +352,8 @@ function reset(){
 }
 
 const DEPTS = ["ADMISSION", "Check-up", "IT Service", "OPD เด็ก (PED)", "OPD ประกันสังคม (I)", "OPD มะเร็งพันธุกรรม", "OPD สูติ-นรีเวช", "OPD ENT", "OPD ศัลยกรรม (SUR)", "OPD อายุรกรรม (MED)", "WARD 3 B", "WARD 3C", "WARD 4 A", "WARD 4 C", "WARD 4 B", "WARD 5 A", "WARD 5C", "WARD 6 A", "การเงินผู้ป่วย (Cashier)", "จัดซื้อทั่วไป", "จัดซื้อยาและเวชภัณฑ์", "ทารกแรกเกิด (NS)", "ประชาสัมพันธ์", "เปล", "ER", "ICU", "Imaging", "UR", "ห้องปฎิบัติการ (LAB)", "ห้องผ่าตัด (OR)", "จ่ายกลาง (SUPPLY)", "ซ่อมบำรุง", "ทันตกรรม (DENT)", "เภสัชกรรม", "วิสัญญี", "เวชศาสตร์ฟื้นฟู", "ห้องคลอด (LR)", "รถพยาบาล", "ลงทะเบียนผู้ป่วย", "เวชระเบียน /ห้องบัตร", "แม่บ้าน - คนสวน", "ห้องผ้า", "มินิมาร์ท", "ความงามและชะลอวัย (Wellness)", "แพทย์แผนจีน", "ยานยนต์", "กายภาพบำบัด", "คลินิกตา", "ศูนย์ส่องกล้องระบบทางเดินอาหาร", "คลังยา", "ศูนย์ตรวจสุขภาพอาชีวอนามัย", "ฝังเข็ม"];
-$("#dept").innerHTML += DEPTS.map(d => `<option>${d}</option>`).join("");
+$("#deptList").innerHTML = DEPTS.map(d => `<option value="${d}"></option>`).join("");
+$("#dept").addEventListener("input", () => $("#dept").classList.remove("invalid"));
 
 /* ---------- หน้าสรุป ---------- */
 let sumData = null, sumFilter = "all";
