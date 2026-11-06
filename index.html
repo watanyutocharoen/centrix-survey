@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>สำรวจปัญหาและความต้องการ ระบบ Centrix</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  :root{
+    --bg:#f3f5f9; --card:#fff; --text:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --primary:#06c755; --primary-d:#05a647;
+    --c1:#dc2626; --c1b:#fef2f2;
+    --c2:#2563eb; --c2b:#eff6ff;
+    --c3:#6b7280; --c3b:#f3f4f6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;font-size:16px;line-height:1.5;padding-bottom:110px}
+  header{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;padding:22px 18px 26px}
+  header h1{margin:0;font-size:20px}
+  header p{margin:4px 0 0;font-size:14px;opacity:.9}
+  main{max-width:640px;margin:-14px auto 0;padding:0 12px}
+  .card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  label.f{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
+  input[type=text],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+  input[type=text]:focus,textarea:focus{outline:2px solid #93c5fd;border-color:#93c5fd}
+  textarea{min-height:96px;resize:vertical}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .item-no{font-weight:700}
+  .del{background:none;border:none;color:var(--c1);font:inherit;font-size:14px;padding:4px 8px;cursor:pointer}
+  .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+  .chip{border:2px solid var(--line);background:#fff;border-radius:10px;padding:10px 4px;font:inherit;font-size:14px;cursor:pointer;text-align:center;line-height:1.3}
+  .chip .ic{display:block;font-size:20px}
+  .chip[data-c="1"].on{border-color:var(--c1);background:var(--c1b);color:var(--c1);font-weight:700}
+  .chip[data-c="2"].on{border-color:var(--c2);background:var(--c2b);color:var(--c2);font-weight:700}
+  .chip[data-c="3"].on{border-color:var(--c3);background:var(--c3b);color:var(--c3);font-weight:700}
+  .invalid{outline:2px solid #fca5a5!important;border-color:#fca5a5!important}
+  .add{width:100%;border:2px dashed #93c5fd;background:#eff6ff;color:#1d4ed8;border-radius:12px;padding:12px;font:inherit;font-weight:700;cursor:pointer}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center;justify-content:center}
+  .bar .cnt{font-size:14px;color:var(--muted);min-width:70px}
+  .send{flex:1;max-width:460px;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:14px;font:inherit;font-weight:700;font-size:17px;cursor:pointer}
+  .send:disabled{background:#9ca3af}
+  .send:active:not(:disabled){background:var(--primary-d)}
+  .done{text-align:center;padding:40px 18px}
+  .done .big{font-size:56px}
+  .done h2{margin:8px 0}
+  .done button{margin-top:14px;background:#2563eb;color:#fff;border:none;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer}
+  .note{font-size:13px;color:var(--muted);margin-top:8px}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;max-width:90%}
+  .toast.show{opacity:1}
+  .hidden{display:none!important}
+  /* tabs */
+  .tabs{display:flex;max-width:640px;margin:-14px auto 0;padding:0 12px;gap:8px;position:relative;z-index:2}
+  .tab{flex:1;border:none;background:#fff;border-radius:12px 12px 0 0;padding:10px;font:inherit;font-weight:700;color:var(--muted);cursor:pointer;box-shadow:0 -1px 3px rgba(0,0,0,.06)}
+  .tab.on{color:#2563eb;background:#fff;box-shadow:0 -2px 0 #2563eb inset}
+  main{margin-top:0!important;padding-top:10px}
+  /* photos */
+  .photo-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .ph{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+  .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .ph b{position:absolute;top:0;right:0;background:rgba(0,0,0,.6);color:#fff;width:22px;height:22px;text-align:center;line-height:22px;cursor:pointer;font-weight:400;border-bottom-left-radius:8px}
+  .addph{width:64px;height:64px;border:2px dashed var(--line);border-radius:10px;background:#fafafa;color:var(--muted);font-size:12px;cursor:pointer;line-height:1.2}
+  /* summary */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .stat{background:#fff;border-radius:12px;padding:12px 6px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .stat .n{font-size:26px;font-weight:800}
+  .stat .l{font-size:12px;color:var(--muted)}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .fl{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+  .fl.on{background:#2563eb;color:#fff;border-color:#2563eb}
+  .rec{border-left:4px solid var(--line)}
+  .rec .meta{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .rec .cat{font-weight:700;font-size:14px;margin:4px 0}
+  .rec .det{white-space:pre-wrap;word-break:break-word;font-size:15px}
+  .rec .st{display:inline-block;margin-top:6px;font-size:12px;background:#f3f4f6;border-radius:999px;padding:2px 10px}
+  .rec .thumbs{display:flex;gap:6px;margin-top:8px}
+  .rec .thumbs img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📋 สำรวจปัญหาและความต้องการ ระบบ Centrix</h1>
+  <p>แจ้งได้หลายเรื่องในครั้งเดียว กด “เพิ่มรายการ” ได้เรื่อยๆ จนครบ แล้วกดส่ง</p>
+</header>
+
+<div class="tabs">
+  <button class="tab on" id="tabForm" type="button">✏️ แจ้งเรื่อง</button>
+  <button class="tab" id="tabSum" type="button">📊 สรุป</button>
+</div>
+
+<main id="sumView" class="hidden">
+  <div class="stats" id="stats"></div>
+  <div class="filters" id="filters"></div>
+  <div id="recList"></div>
+  <div class="note" id="sumNote"></div>
+</main>
+
+<input type="file" id="fileInput" accept="image/*" multiple class="hidden">
+
+<main id="formView">
+  <div class="card">
+    <div class="row2">
+      <div>
+        <label class="f" for="reporter">ชื่อผู้แจ้ง *</label>
+        <input type="text" id="reporter" placeholder="ชื่อ-สกุล / ชื่อเล่น" autocomplete="off">
+      </div>
+      <div>
+        <label class="f" for="dept">แผนก / หน่วยงาน *</label>
+        <input type="text" id="dept" placeholder="เช่น เภสัชกรรม, 4A" autocomplete="off">
+      </div>
+    </div>
+  </div>
+
+  <div id="items"></div>
+
+  <button class="add" id="addBtn" type="button">＋ เพิ่มรายการ</button>
+  <div class="note">* ทุกรายการต้องเลือกหมวดและกรอกรายละเอียด</div>
+</main>
+
+<main id="doneView" class="hidden">
+  <div class="card done">
+    <div class="big">✅</div>
+    <h2>ส่งเรียบร้อยแล้ว</h2>
+    <div id="doneMsg" class="note"></div>
+    <button id="againBtn" type="button">แจ้งเรื่องใหม่</button>
+  </div>
+</main>
+
+<div class="bar" id="bar">
+  <div class="cnt" id="cnt">0 รายการ</div>
+  <button class="send" id="sendBtn" type="button">ส่ง</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ ตั้งค่า (แก้ 2 ค่านี้ก่อนใช้งาน) ============ */
+const CONFIG = {
+  LIFF_ID: "",        // LIFF ID จาก LINE Developers เช่น "1234567890-AbCdEfGh" (ว่างไว้ = ไม่ส่งเข้าไลน์จากหน้าเว็บ)
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyj8K8vEqlyBaWmLw01n6XRnsxHx8-DiwzhKHyCBFeFVxu8MQuNJ-1B5udzY_A20FjHSQ/exec",     // Web App URL ของ Google Apps Script (ลงท้ายด้วย /exec)
+};
+/* ======================================================== */
+
+const CATS = {
+  1: { name: "ปัญหาที่ต้องการให้แก้ไข", short: "ปัญหา",       icon: "🛠️", color: "#dc2626" },
+  2: { name: "ความต้องการเพิ่มเติม",     short: "ความต้องการ", icon: "💡", color: "#2563eb" },
+  3: { name: "อื่นๆ",                    short: "อื่นๆ",       icon: "📝", color: "#6b7280" },
+};
+
+const MAX_PHOTOS = 3;
+let items = [];      // [{id, cat, detail, photos:[dataURL]}]
+let uid = 0;
+let inLiff = false;
+
+const $ = s => document.querySelector(s);
+
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+function addItem(focus=true){
+  items.push({ id: ++uid, cat: 0, detail: "", photos: [] });
+  render(focus);
+}
+
+function removeItem(id){
+  if(items.length === 1){ items[0].cat = 0; items[0].detail = ""; items[0].photos = []; render(); return; }
+  items = items.filter(i => i.id !== id);
+  render();
+}
+
+function render(focusLast=false){
+  const wrap = $("#items");
+  wrap.innerHTML = "";
+  items.forEach((it, idx) => {
+    const el = document.createElement("div");
+    el.className = "card";
+    el.dataset.id = it.id;
+    el.innerHTML = `
+      <div class="item-head">
+        <span class="item-no">รายการที่ ${idx+1}</span>
+        <button class="del" type="button">ลบ</button>
+      </div>
+      <div class="chips">
+        ${[1,2,3].map(c => `
+          <button type="button" class="chip ${it.cat===c?"on":""}" data-c="${c}">
+            <span class="ic">${CATS[c].icon}</span>${CATS[c].name}
+          </button>`).join("")}
+      </div>
+      <label class="f">รายละเอียด *</label>
+      <textarea placeholder="อธิบายปัญหา / ความต้องการ เช่น หน้าจอไหน ขั้นตอนไหน อยากให้เป็นอย่างไร"></textarea>
+      <div class="photo-row">
+        ${it.photos.map((p, pi) => `<div class="ph"><img src="${p}" alt=""><b data-pi="${pi}">×</b></div>`).join("")}
+        ${it.photos.length < MAX_PHOTOS ? `<button type="button" class="addph">📷<br>แนบรูป</button>` : ""}
+      </div>
+    `;
+    el.querySelectorAll(".ph b").forEach(b => b.addEventListener("click", () => {
+      it.photos.splice(+b.dataset.pi, 1); render();
+    }));
+    const ap = el.querySelector(".addph");
+    if(ap) ap.addEventListener("click", () => pickPhotos(it));
+    const ta = el.querySelector("textarea");
+    ta.value = it.detail;
+    ta.addEventListener("input", () => { it.detail = ta.value; ta.classList.remove("invalid"); });
+    el.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+      it.cat = +b.dataset.c;
+      el.querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x === b));
+      el.querySelector(".chips").classList.remove("invalid");
+    }));
+    el.querySelector(".del").addEventListener("click", () => removeItem(it.id));
+    wrap.appendChild(el);
+  });
+  $("#cnt").textContent = items.length + " รายการ";
+  if(focusLast){
+    const last = wrap.lastElementChild;
+    if(last){ last.scrollIntoView({behavior:"smooth", block:"center"}); }
+  }
+}
+
+/* ---------- รูปภาพ: ย่อขนาดในเครื่องก่อนส่ง ---------- */
+function pickPhotos(it){
+  const inp = $("#fileInput");
+  inp.value = "";
+  inp.onchange = async () => {
+    const files = [...inp.files].slice(0, MAX_PHOTOS - it.photos.length);
+    for(const f of files){
+      try{ it.photos.push(await shrink(f)); }catch(e){ toast("อ่านรูปไม่ได้"); }
+    }
+    render();
+  };
+  inp.click();
+}
+
+function shrink(file, max=1280, q=0.75){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL("image/jpeg", q));
+    };
+    img.onerror = rej;
+    img.src = url;
+  });
+}
+
+function validate(){
+  let ok = true, firstBad = null;
+  const rep = $("#reporter"), dep = $("#dept");
+  [rep, dep].forEach(i => {
+    if(!i.value.trim()){ i.classList.add("invalid"); ok = false; firstBad = firstBad || i; }
+    else i.classList.remove("invalid");
+  });
+  items.forEach(it => {
+    const el = document.querySelector(`[data-id="${it.id}"]`);
+    if(!it.cat){ el.querySelector(".chips").classList.add("invalid"); ok = false; firstBad = firstBad || el; }
+    if(!it.detail.trim()){ el.querySelector("textarea").classList.add("invalid"); ok = false; firstBad = firstBad || el; }
+  });
+  if(firstBad) firstBad.scrollIntoView({behavior:"smooth", block:"center"});
+  return ok;
+}
+
+/* ---------- Flex message สำหรับส่งเข้าไลน์ ---------- */
+function buildFlex(p){
+  const rows = p.items.map((it, i) => ({
+    type: "box", layout: "vertical", spacing: "xs", margin: "md",
+    contents: [
+      { type: "box", layout: "baseline", spacing: "sm", contents: [
+        { type: "text", text: `${i+1}.`, size: "sm", color: "#6b7280", flex: 0 },
+        { type: "text", text: `${CATS[it.cat].icon} ${CATS[it.cat].name}`, size: "sm", weight: "bold", color: CATS[it.cat].color, wrap: true }
+      ]},
+      { type: "text", text: it.detail, size: "sm", wrap: true, color: "#111827" },
+      ...(it.urls || []).slice(0, 2).map(u => ({
+        type: "image", url: u, size: "full", aspectMode: "cover", aspectRatio: "16:9", margin: "sm",
+        action: { type: "uri", uri: u }
+      })),
+      ...((it.urls || []).length > 2 ? [{ type:"text", text:`+ อีก ${it.urls.length-2} รูป (ดูในชีต)`, size:"xs", color:"#6b7280" }] : [])
+    ]
+  }));
+  // แทรกเส้นคั่นระหว่างรายการ
+  const body = [];
+  rows.forEach((r, i) => { if(i) body.push({ type:"separator", margin:"md" }); body.push(r); });
+
+  const cnt = {1:0,2:0,3:0};
+  p.items.forEach(it => cnt[it.cat]++);
+  const summary = [1,2,3].filter(c => cnt[c]).map(c => `${CATS[c].short} ${cnt[c]}`).join(" · ");
+
+  return {
+    type: "flex",
+    altText: `📋 Centrix: ${p.items.length} รายการ จาก ${p.reporter}`,
+    contents: {
+      type: "bubble", size: "mega",
+      header: { type:"box", layout:"vertical", backgroundColor:"#2563eb", paddingAll:"14px", contents:[
+        { type:"text", text:"📋 สำรวจปัญหา/ความต้องการ Centrix", color:"#ffffff", weight:"bold", size:"md", wrap:true },
+        { type:"text", text:`${p.items.length} รายการ (${summary})`, color:"#dbeafe", size:"xs", margin:"xs", wrap:true }
+      ]},
+      body: { type:"box", layout:"vertical", paddingAll:"14px", contents:[
+        { type:"box", layout:"baseline", contents:[
+          { type:"text", text:"ผู้แจ้ง", size:"xs", color:"#6b7280", flex:2 },
+          { type:"text", text:p.reporter, size:"sm", weight:"bold", flex:5, wrap:true } ]},
+        { type:"box", layout:"baseline", margin:"xs", contents:[
+          { type:"text", text:"แผนก", size:"xs", color:"#6b7280", flex:2 },
+          { type:"text", text:p.dept, size:"sm", flex:5, wrap:true } ]},
+        { type:"separator", margin:"md" },
+        ...body
+      ]},
+      footer: { type:"box", layout:"vertical", paddingAll:"10px", contents:[
+        { type:"text", text:p.timeText, size:"xs", color:"#9ca3af", align:"end" } ]}
+    }
+  };
+}
+
+function thaiNow(){
+  return new Date().toLocaleString("th-TH", { dateStyle:"medium", timeStyle:"short", timeZone:"Asia/Bangkok" });
+}
+
+async function saveToSheet(payload){
+  if(!CONFIG.SCRIPT_URL) throw new Error("ยังไม่ได้ตั้งค่า SCRIPT_URL");
+  // text/plain เพื่อเลี่ยง CORS preflight ของ Apps Script
+  const res = await fetch(CONFIG.SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || "บันทึกไม่สำเร็จ");
+  return data;
+}
+
+async function submit(){
+  if(!validate()){ toast("กรอกข้อมูลให้ครบก่อนนะ"); return; }
+  const btn = $("#sendBtn");
+  btn.disabled = true; btn.textContent = "กำลังส่ง...";
+
+  const payload = {
+    reporter: $("#reporter").value.trim(),
+    dept: $("#dept").value.trim(),
+    items: items.map(i => ({ cat: i.cat, catName: CATS[i.cat].name, detail: i.detail.trim(), photos: i.photos })),
+    timeText: thaiNow(),
+    lineUserId: "",
+  };
+
+  try{
+    if(inLiff){
+      try{ const prof = await liff.getProfile(); payload.lineUserId = prof.userId; }catch(e){}
+    }
+
+    // 1) บันทึกลง Google Sheet (และให้ Apps Script push เข้าไลน์ถ้าตั้ง token ไว้)
+    const saved = await saveToSheet(payload);   // saved.urls = [[url,...], ...] ต่อรายการ
+
+    // 2) ส่ง Flex เข้าแชท/กลุ่ม ผ่าน LIFF (ใช้ได้เมื่อเปิดฟอร์มจากในไลน์)
+    let sentToLine = false;
+    if(inLiff && liff.isInClient()){
+      try{
+        const flexPayload = { ...payload, items: payload.items.map((it, i) => ({ ...it, photos: undefined, urls: (saved.urls && saved.urls[i]) || [] })) };
+        await liff.sendMessages([ buildFlex(flexPayload) ]);
+        sentToLine = true;
+      }catch(e){ console.warn("sendMessages failed", e); }
+    }
+
+    $("#doneMsg").textContent = `บันทึก ${payload.items.length} รายการลง Google Sheet แล้ว` +
+      (sentToLine ? " และส่งแจ้งเตือนเข้าไลน์แล้ว" : "");
+    $("#formView").classList.add("hidden");
+    $("#bar").classList.add("hidden");
+    $("#doneView").classList.remove("hidden");
+    window.scrollTo(0,0);
+  }catch(err){
+    console.error(err);
+    toast("ส่งไม่สำเร็จ: " + err.message);
+  }finally{
+    btn.disabled = false; btn.textContent = "ส่ง";
+  }
+}
+
+function reset(){
+  items = []; $("#dept").value = $("#dept").value; // เก็บชื่อ/แผนกไว้ ไม่ต้องกรอกใหม่
+  addItem(false);
+  $("#doneView").classList.add("hidden");
+  $("#formView").classList.remove("hidden");
+  $("#bar").classList.remove("hidden");
+  window.scrollTo(0,0);
+}
+
+/* ---------- หน้าสรุป ---------- */
+let sumData = null, sumFilter = "all";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const CAT_BY_NAME = Object.fromEntries(Object.values(CATS).map(c => [c.name, c]));
+
+function showTab(t){
+  const isSum = t === "sum";
+  $("#tabForm").classList.toggle("on", !isSum);
+  $("#tabSum").classList.toggle("on", isSum);
+  $("#sumView").classList.toggle("hidden", !isSum);
+  const doneShown = !$("#doneView").classList.contains("hidden");
+  $("#formView").classList.toggle("hidden", isSum || doneShown);
+  $("#doneView").classList.toggle("hidden", isSum || !doneShown);
+  $("#bar").classList.toggle("hidden", isSum || doneShown);
+  if(isSum) loadSummary();
+}
+
+async function loadSummary(){
+  $("#sumNote").textContent = "กำลังโหลด...";
+  try{
+    if(!CONFIG.SCRIPT_URL) throw new Error("ยังไม่ได้ตั้งค่า SCRIPT_URL");
+    const res = await fetch(CONFIG.SCRIPT_URL + "?action=summary");
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.error || "โหลดไม่สำเร็จ");
+    sumData = d; sumFilter = "all"; renderSummary();
+    $("#sumNote").textContent = `แสดงล่าสุด ${d.recent.length} จากทั้งหมด ${d.total} รายการ · ดูครบในชีต`;
+  }catch(e){ $("#sumNote").textContent = "โหลดสรุปไม่ได้: " + e.message; }
+}
+
+function renderSummary(){
+  const d = sumData;
+  $("#stats").innerHTML = Object.values(CATS).map(c =>
+    `<div class="stat"><div class="n" style="color:${c.color}">${d.byCat[c.name] || 0}</div><div class="l">${c.icon} ${c.short}</div></div>`).join("");
+
+  const sts = Object.keys(d.byStatus);
+  const opts = [["all", `ทั้งหมด (${d.total})`], ...Object.values(CATS).map(c => ["c:" + c.name, c.short]), ...sts.map(s => ["s:" + s, `${s} (${d.byStatus[s]})`])];
+  $("#filters").innerHTML = opts.map(([k, l]) => `<button type="button" class="fl ${sumFilter===k?"on":""}" data-k="${esc(k)}">${esc(l)}</button>`).join("");
+  $("#filters").querySelectorAll(".fl").forEach(b => b.addEventListener("click", () => { sumFilter = b.dataset.k; renderSummary(); }));
+
+  const list = d.recent.filter(r =>
+    sumFilter === "all" || (sumFilter.startsWith("c:") && r.cat === sumFilter.slice(2)) || (sumFilter.startsWith("s:") && r.status === sumFilter.slice(2)));
+  $("#recList").innerHTML = list.length ? list.map(r => {
+    const c = CAT_BY_NAME[r.cat] || CATS[3];
+    return `<div class="card rec" style="border-left-color:${c.color}">
+      <div class="meta"><span>${esc(r.time)}</span><span>${esc(r.reporter)} · ${esc(r.dept)}</span></div>
+      <div class="cat" style="color:${c.color}">${c.icon} ${esc(r.cat)}</div>
+      <div class="det">${esc(r.detail)}</div>
+      ${(r.photos||[]).length ? `<div class="thumbs">${r.photos.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" loading="lazy" alt=""></a>`).join("")}</div>` : ""}
+      <span class="st">${esc(r.status || "รอดำเนินการ")}</span>
+    </div>`;
+  }).join("") : `<div class="card note">ไม่มีรายการ</div>`;
+}
+
+$("#tabForm").addEventListener("click", () => showTab("form"));
+$("#tabSum").addEventListener("click", () => showTab("sum"));
+
+/* ---------- init ---------- */
+$("#addBtn").addEventListener("click", () => addItem(true));
+$("#sendBtn").addEventListener("click", submit);
+$("#againBtn").addEventListener("click", reset);
+["#reporter","#dept"].forEach(s => $(s).addEventListener("input", e => e.target.classList.remove("invalid")));
+
+// จำชื่อผู้แจ้ง/แผนก ไว้ในเครื่อง (ถ้าใช้ได้)
+try{
+  $("#reporter").value = localStorage.getItem("cx_reporter") || "";
+  $("#dept").value = localStorage.getItem("cx_dept") || "";
+  $("#sendBtn").addEventListener("click", () => {
+    localStorage.setItem("cx_reporter", $("#reporter").value.trim());
+    localStorage.setItem("cx_dept", $("#dept").value.trim());
+  });
+}catch(e){}
+
+addItem(false);
+
+(async () => {
+  if(CONFIG.LIFF_ID && window.liff){
+    try{
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+      inLiff = true;
+      if(!liff.isLoggedIn() && !liff.isInClient()){ /* เปิดนอกไลน์: ไม่บังคับ login */ }
+      else if(liff.isInClient()){
+        try{ const p = await liff.getProfile(); if(!$("#reporter").value) $("#reporter").value = p.displayName; }catch(e){}
+      }
+    }catch(e){ console.warn("LIFF init failed", e); }
+  }
+})();
+</script>
+</body>
+</html>
